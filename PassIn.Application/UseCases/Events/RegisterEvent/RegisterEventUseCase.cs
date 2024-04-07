@@ -1,5 +1,4 @@
-using Microsoft.EntityFrameworkCore;
-using PassIn.Communication.Requests;
+﻿using PassIn.Communication.Requests;
 using PassIn.Communication.Responses;
 using PassIn.Exceptions;
 using PassIn.Infrastructure;
@@ -7,44 +6,43 @@ using PassIn.Infrastructure;
 namespace PassIn.Application.UseCases.Events.Register;
 public class RegisterEventUseCase
 {
-    public ResponseRegisterJsonEventJson Execute(RequestEventJson request)
+    public ResponseRegisteredJson Execute(RequestEventJson request)
     {
         Validate(request);
 
         var dbContext = new PassInDbContext();
-
         var entity = new Infrastructure.Entities.Event
-        {   
+        {
             Title = request.Title,
             Details = request.Details,
             Maximum_Attendees = request.MaximumAttendees,
-            Slug = request.Title.ToLower().Replace(" ", "-"),
+            Slug = request.Title.ToLower().Replace(" ", "-")
         };
 
         dbContext.Events.Add(entity);
         dbContext.SaveChanges();
 
-        return new ResponseRegisterJsonEventJson
+        return new ResponseRegisteredJson
         {
             Id = entity.Id
         };
     }
 
-    public void Validate(RequestEventJson request)
+    private void Validate(RequestEventJson request)
     {
-        if (request.MaximumAttendees <= 0)
+        if (request.MaximumAttendees <= 0 || request == null)
         {
-            throw new PassInException("The Maximum attendes is invalid.");
+            throw new ErrorOnValidationException("The maximum attendees is invalid.");
         }
 
         if (string.IsNullOrWhiteSpace(request.Title))
         {
-            throw new PassInException("The title is invalid.");
+            throw new ErrorOnValidationException("The title is invalid.");
         }
 
         if (string.IsNullOrWhiteSpace(request.Details))
         {
-            throw new PassInException("The title is invalid.");
+            throw new ErrorOnValidationException("The details are invalid.");
         }
     }
 }
